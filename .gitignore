@@ -4,3 +4,5 @@
 /.esphome/
 /secrets.yaml
 /TO DO.md
+/automations/
+/esphome_ha/
