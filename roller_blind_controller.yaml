@@ -6,6 +6,7 @@ substitutions:
   decel: inf # prędkośc hamowania silnika krokowego, wartość inf oznacza brak ograniczeń
   max_speed: 600.0  # prędkość silnika krokowego
   id_cover: "sterownik_cover" # id encji w ESPHome - nie zmieniać!
+  relax_delay: 5s # opóźnienie przed uśpieniem sterownika po ruchu
 
 globals:
   - id: pending_publish
@@ -31,7 +32,7 @@ globals:
   - id: relax_after_move
     type: bool
     restore_value: yes
-    initial_value: 'false'
+    initial_value: 'true'
 
 esphome:
   name: "${esphome_name}"
@@ -373,7 +374,7 @@ script:
   - id: relax_stepper
     mode: restart
     then:
-      - delay: 5s
+      - delay: ${relax_delay}
       - lambda: |-
           if (id(relax_after_move)) {
             id(my_stepper).set_sleep_when_done(true);
