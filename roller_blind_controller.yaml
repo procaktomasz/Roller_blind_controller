@@ -1,11 +1,11 @@
 substitutions:
   cover_name: "Sterownik roleta 1" # nazwa w Home Assistant
-  id_cover: "sterownik_cover" # id encji w ESPHome
   esphome_name: "sterownik-roleta-1" # nazwa urządzenia w ESPHome
   step_total: 500  # domyślna liczba kroków silnika krokowego dla pełnego zamknięcia rolety
   accel: inf # prędkosć przyspieszenia silnika krokowego, wartość inf oznacza brak ograniczeń
   decel: inf # prędkośc hamowania silnika krokowego, wartość inf oznacza brak ograniczeń
   max_speed: 600.0  # prędkość silnika krokowego
+  id_cover: "sterownik_cover" # id encji w ESPHome - nie zmieniać!
 
 globals:
   - id: pending_publish
