@@ -31,6 +31,7 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 6. Opcjonalnie włącz przełącznik `Kalibracja - auto usypianie`, aby po ruchu automatycznie uśpić sterownik silnika (zapobiega nagrzewaniu silnika i oszczędza energię). Włączenie powoduje utrzymywanie rolety w stałym docisku, więc uniemożliwia ręczny ruch rolety.
 7. Wyłącz przełącznik `Kalibracja`, aby powrócić do normalnego trybu pracy. Sterownik zapamięta nowe ustawienia i wykorzysta je przy każdym kolejnym ruchu. Odczekaj około minutę, aby zapewnić zapis danych w pamięci urządzenia. Po tym czasie ustawienia są trwałe nawet po zaniku zasilania.
 
+## Następne kroki
 - Uzupełnij plik `secrets.yaml` lokalnymi danymi (SSID, hasła, klucze OTA) w ESPHome.
 - Skonfiguruj integrację ESPHome w Home Assistant i dodaj urządzenie zgodnie z nazwą `esphome_name` z pliku `roller_blind_controller.yaml` (zmień ją, jeśli potrzebujesz innego identyfikatora).
 - Przetestuj otwieranie, zamykanie oraz zatrzymywanie rolety, aby potwierdzić poprawność kalibracji.
