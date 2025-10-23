@@ -155,6 +155,13 @@ cover:
           const int dir = id(motor_direction) == -1 ? -1 : 1;
           id(relax_stepper).stop();
           id(my_stepper).set_sleep_when_done(false);
+          // zgłoś rozpoczęcie ruchu w HA w zależności od kierunku
+          if (pos < id(sterownik_cover).position) {
+            id(sterownik_cover).current_operation = esphome::cover::COVER_OPERATION_CLOSING;
+          } else if (pos > id(sterownik_cover).position) {
+            id(sterownik_cover).current_operation = esphome::cover::COVER_OPERATION_OPENING;
+          }
+          id(sterownik_cover).publish_state();
           int steps_i = id(total_steps);
           if (steps_i <= 0) steps_i = ${step_total};
           float steps = (float)steps_i;
@@ -179,6 +186,8 @@ cover:
           const int dir = id(motor_direction) == -1 ? -1 : 1;
           id(relax_stepper).stop();
           id(my_stepper).set_sleep_when_done(false);
+          id(sterownik_cover).current_operation = esphome::cover::COVER_OPERATION_OPENING;
+          id(sterownik_cover).publish_state();
           int current_raw = (int)id(my_stepper).current_position;
           int current_user = dir == -1 ? -current_raw : current_raw;
           int steps_i = id(total_steps);
@@ -196,6 +205,8 @@ cover:
           const int dir = id(motor_direction) == -1 ? -1 : 1;
           id(relax_stepper).stop();
           id(my_stepper).set_sleep_when_done(false);
+          id(sterownik_cover).current_operation = esphome::cover::COVER_OPERATION_CLOSING;
+          id(sterownik_cover).publish_state();
           int raw_cur = (int)id(my_stepper).current_position;
           int cur = dir == -1 ? -raw_cur : raw_cur;
           int steps_i = id(total_steps);
@@ -273,6 +284,7 @@ interval:
                   id(my_stepper).set_sleep_when_done(false);
                 }
               }
+              sterownik_cover->current_operation = esphome::cover::COVER_OPERATION_IDLE;
               id(pending_publish) = false;
             } else {
               id(last_pos) = cur;
