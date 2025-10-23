@@ -6,7 +6,7 @@ substitutions:
   decel: inf # prędkośc hamowania silnika krokowego, wartość inf oznacza brak ograniczeń
   max_speed: 600.0  # prędkość silnika krokowego
   id_cover: "sterownik_cover" # id encji w ESPHome - nie zmieniać!
-  relax_delay: 5s # opóźnienie przed uśpieniem sterownika po ruchu
+  relax_delay: 2s # opóźnienie przed uśpieniem sterownika po ruchu
 
 globals:
   - id: pending_publish
