@@ -1,0 +1,425 @@
+substitutions:
+  cover_name: "Sterownik roleta 1" # nazwa w Home Assistant
+  id_cover: "sterownik_cover" # id encji w ESPHome
+  esphome_name: "sterownik-roleta-1" # nazwa urządzenia w ESPHome
+  step_total: 500  # domyślna liczba kroków silnika krokowego dla pełnego zamknięcia rolety
+  accel: inf # prędkosć przyspieszenia silnika krokowego, wartość inf oznacza brak ograniczeń
+  decel: inf # prędkośc hamowania silnika krokowego, wartość inf oznacza brak ograniczeń
+  max_speed: 600.0  # prędkość silnika krokowego
+
+globals:
+  - id: pending_publish
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: last_pos
+    type: int
+    restore_value: no
+    initial_value: '0'
+  - id: total_steps
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: last_position_steps
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: motor_direction
+    type: int
+    restore_value: yes
+    initial_value: '1'
+  - id: relax_after_move
+    type: bool
+    restore_value: yes
+    initial_value: 'false'
+
+esphome:
+  name: "${esphome_name}"
+  friendly_name: "${cover_name}"
+  on_boot:
+    priority: 600
+    then:
+      - lambda: |-
+          int steps = id(total_steps);
+          if (steps <= 0) {
+            steps = ${step_total};
+            id(total_steps) = steps;
+          }
+          int stored = id(last_position_steps);
+          if (stored < 0) stored = 0;
+          if (stored > steps) stored = steps;
+          id(last_position_steps) = stored;
+          id(last_pos) = stored;
+          id(pending_publish) = false;
+          int dir = id(motor_direction);
+          if (dir != 1 && dir != -1) dir = 1;
+          id(motor_direction) = dir;
+          int internal = dir == -1 ? -stored : stored;
+          id(my_stepper).report_position(internal);
+          id(my_stepper).set_target(internal);
+          bool relax = id(relax_after_move);
+          id(relax_switch).publish_state(relax);
+          id(my_stepper).set_sleep_when_done(relax);
+          float pos = 1.0f;
+          if (steps > 0) pos = 1.0f - ((float)stored / (float)steps);
+          if (pos < 0.0f) pos = 0.0f;
+          if (pos > 1.0f) pos = 1.0f;
+          sterownik_cover->position = pos;
+          id(sterownik_cover).publish_state();
+          const char *dir_label = dir == 1 ? "Prawo" : "Lewo";
+          id(motor_direction_select).publish_state(dir_label);
+
+esp8266:
+  board: d1_mini
+  restore_from_flash: true
+
+wifi:
+  networks:
+    # - ssid: !secret wifi_ssidc
+    #   password: !secret wifi_password
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
+  fast_connect: true
+
+api:
+  on_client_connected:
+    - delay: 2000ms
+    - lambda: |-
+          int steps = id(total_steps);
+          if (steps <= 0) {
+            steps = ${step_total};
+            id(total_steps) = steps;
+          }
+          int stored = id(last_position_steps);
+          if (stored < 0) stored = 0;
+          if (stored > steps) stored = steps;
+          id(last_position_steps) = stored;
+          id(last_pos) = stored;
+          id(pending_publish) = false;
+          int dir = id(motor_direction);
+          if (dir != 1 && dir != -1) dir = 1;
+          id(motor_direction) = dir;
+          int internal = dir == -1 ? -stored : stored;
+          id(my_stepper).report_position(internal);
+          id(my_stepper).set_target(internal);
+          bool relax = id(relax_after_move);
+          id(relax_switch).publish_state(relax);
+          id(my_stepper).set_sleep_when_done(relax);
+          float pos = 1.0f;
+          if (steps > 0) pos = 1.0f - ((float)stored / (float)steps);
+          if (pos < 0.0f) pos = 0.0f;
+          if (pos > 1.0f) pos = 1.0f;
+          sterownik_cover->position = pos;
+          id(sterownik_cover).publish_state();
+          const char *dir_label = dir == 1 ? "Prawo" : "Lewo";
+          id(motor_direction_select).publish_state(dir_label);
+
+ota:
+  platform: esphome
+  password: !secret ota_password
+
+logger:
+  level: DEBUG
+  esp8266_store_log_strings_in_flash: true
+
+web_server:
+  port: 80
+  auth:
+    username: !secret web_server_username
+    password: !secret web_server_password
+  log: true
+
+captive_portal:
+
+stepper:
+  - platform: uln2003
+    id: my_stepper
+    pin_a: D1
+    pin_b: D2
+    pin_c: D3
+    pin_d: D5
+    max_speed: ${max_speed}
+    sleep_when_done: false
+    acceleration: ${accel}
+    deceleration: ${decel}
+    step_mode: FULL_STEP
+
+cover:
+  - platform: template
+    name: "${cover_name}"
+    id: ${id_cover}
+    optimistic: false
+    has_position: true
+    position_action:
+      - lambda: |-
+          const int dir = id(motor_direction) == -1 ? -1 : 1;
+          id(relax_stepper).stop();
+          id(my_stepper).set_sleep_when_done(false);
+          int steps_i = id(total_steps);
+          if (steps_i <= 0) steps_i = ${step_total};
+          float steps = (float)steps_i;
+          if (steps <= 0.0f) steps = 1.0f;
+          float target = (1.0f - pos) * steps;
+          if (target < 0.0f) target = 0.0f;
+          if (target > steps) target = steps;
+          int target_steps = (int)target;
+          if (target_steps < 0) target_steps = 0;
+          if (target_steps > steps_i) target_steps = steps_i;
+          int current_raw = (int)id(my_stepper).current_position;
+          int current_user = dir == -1 ? -current_raw : current_raw;
+          if (current_user < 0) current_user = 0;
+          if (current_user > steps_i) current_user = steps_i;
+          id(pending_publish) = true;
+          id(last_pos) = current_user;
+          id(last_position_steps) = target_steps;
+          int actual_target = dir == -1 ? -target_steps : target_steps;
+          id(my_stepper).set_target(actual_target);
+    open_action:
+      - lambda: |-
+          const int dir = id(motor_direction) == -1 ? -1 : 1;
+          id(relax_stepper).stop();
+          id(my_stepper).set_sleep_when_done(false);
+          int current_raw = (int)id(my_stepper).current_position;
+          int current_user = dir == -1 ? -current_raw : current_raw;
+          int steps_i = id(total_steps);
+          if (steps_i <= 0) steps_i = ${step_total};
+          if (!id(calibration_mode).state) {
+            if (current_user < 0) current_user = 0;
+            if (current_user > steps_i) current_user = steps_i;
+          }
+          id(pending_publish) = true;
+          id(last_pos) = current_user;
+          id(last_position_steps) = 0;
+          id(my_stepper).set_target(0);
+    close_action:
+      - lambda: |-
+          const int dir = id(motor_direction) == -1 ? -1 : 1;
+          id(relax_stepper).stop();
+          id(my_stepper).set_sleep_when_done(false);
+          int raw_cur = (int)id(my_stepper).current_position;
+          int cur = dir == -1 ? -raw_cur : raw_cur;
+          int steps_i = id(total_steps);
+          if (steps_i <= 0) steps_i = ${step_total};
+          bool calibrating = id(calibration_mode).state;
+          if (!calibrating) {
+            if (cur < 0) cur = 0;
+            if (cur > steps_i) cur = steps_i;
+          }
+          int target_steps;
+          if (calibrating) {
+            target_steps = cur + 200000;  // zapewnij długi zjazd w trybie kalibracji
+          } else {
+            target_steps = steps_i;
+            if (target_steps <= 0) target_steps = 1;
+          }
+          id(pending_publish) = true;
+          id(last_pos) = cur;
+          if (calibrating) {
+            id(last_position_steps) = cur;
+          } else {
+            id(last_position_steps) = steps_i;
+          }
+          int actual_target = dir == -1 ? -target_steps : target_steps;
+          id(my_stepper).set_target(actual_target);
+    stop_action:
+      - lambda: |-
+          const int dir = id(motor_direction) == -1 ? -1 : 1;
+          id(relax_stepper).stop();
+          id(my_stepper).set_sleep_when_done(false);
+          int raw_cur = (int)id(my_stepper).current_position;
+          int cur = dir == -1 ? -raw_cur : raw_cur;
+          int steps_i = id(total_steps);
+          if (steps_i <= 0) steps_i = ${step_total};
+          if (!id(calibration_mode).state) {
+            if (cur < 0) cur = 0;
+            if (cur > steps_i) cur = steps_i;
+          }
+          id(pending_publish) = true;
+          id(last_pos) = cur;
+          int actual_target = dir == -1 ? -cur : cur;
+          id(my_stepper).set_target(actual_target);
+          int store_cur = cur;
+          if (store_cur < 0) store_cur = 0;
+          if (store_cur > steps_i) store_cur = steps_i;
+          id(last_position_steps) = store_cur;
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          if (id(pending_publish)) {
+            const int dir = id(motor_direction) == -1 ? -1 : 1;
+            int raw_cur = (int)id(my_stepper).current_position;
+            int cur = dir == -1 ? -raw_cur : raw_cur;
+            int steps_i = id(total_steps);
+            if (steps_i <= 0) steps_i = ${step_total};
+            int display_cur = cur;
+            if (display_cur < 0) display_cur = 0;
+            if (display_cur > steps_i) display_cur = steps_i;
+            if (cur == id(last_pos)) {
+              float steps = (float)steps_i;
+              float pos = 0.0f;
+              if (steps > 0.0f) pos = 1.0f - ((float)display_cur / steps);
+              if (pos < 0.0f) pos = 0.0f;
+              if (pos > 1.0f) pos = 1.0f;
+              sterownik_cover->position = pos;
+              id(sterownik_cover).publish_state();
+              id(last_position_steps) = display_cur;
+              if (!id(calibration_mode).state) {
+                if (id(relax_after_move)) {
+                  id(relax_stepper).execute();
+                } else {
+                  id(relax_stepper).stop();
+                  id(my_stepper).set_sleep_when_done(false);
+                }
+              }
+              id(pending_publish) = false;
+            } else {
+              id(last_pos) = cur;
+            }
+          }
+
+switch:
+  - platform: template
+    name: "Kalibracja"
+    id: calibration_mode
+    optimistic: true
+  - platform: template
+    name: "Kalibracja - auto usypianie"
+    id: relax_switch
+    optimistic: true
+    turn_on_action:
+      - lambda: |-
+          if (!id(calibration_mode).state) {
+            ESP_LOGW("relax", "Najpierw wlacz tryb kalibracji");
+            id(relax_switch).publish_state(id(relax_after_move));
+            return;
+          }
+          id(relax_after_move) = true;
+          id(relax_switch).publish_state(true);
+          id(relax_stepper).execute();
+    turn_off_action:
+      - lambda: |-
+          if (!id(calibration_mode).state) {
+            ESP_LOGW("relax", "Najpierw wlacz tryb kalibracji");
+            id(relax_switch).publish_state(id(relax_after_move));
+            return;
+          }
+          id(relax_after_move) = false;
+          id(relax_switch).publish_state(false);
+          id(relax_stepper).stop();
+          id(my_stepper).set_sleep_when_done(false);
+
+select:
+  - platform: template
+    name: "Kalibracja - kierunek silnika"
+    id: motor_direction_select
+    optimistic: false
+    options:
+      - "Prawo"
+      - "Lewo"
+    set_action:
+      - lambda: |-
+          if (!id(calibration_mode).state) {
+            ESP_LOGW("direction", "Najpierw wlacz tryb kalibracji");
+            const char *current = id(motor_direction) == -1 ? "Lewo" : "Prawo";
+            id(motor_direction_select).publish_state(current);
+            return;
+          }
+          auto choice = x;
+          int prev_dir = id(motor_direction);
+          if (prev_dir != 1 && prev_dir != -1) prev_dir = 1;
+          const int new_dir = choice == "Lewo" ? -1 : 1;
+          if (prev_dir == new_dir) {
+            id(motor_direction_select).publish_state(choice.c_str());
+            return;
+          }
+          int raw_pos = (int)id(my_stepper).current_position;
+          int user_pos = prev_dir == -1 ? -raw_pos : raw_pos;
+          id(motor_direction) = new_dir;
+          int internal = new_dir == -1 ? -user_pos : user_pos;
+          id(my_stepper).report_position(internal);
+          id(my_stepper).set_target(internal);
+          float steps = (float)id(total_steps);
+          if (steps <= 0.0f) steps = ${step_total};
+          if (user_pos < 0) user_pos = 0;
+          if (steps > 0.0f && user_pos > (int)steps) user_pos = (int)steps;
+          id(last_pos) = user_pos;
+          id(last_position_steps) = user_pos;
+          float pos = 1.0f;
+          if (steps > 0.0f) {
+            pos = 1.0f - ((float)user_pos / steps);
+            if (pos < 0.0f) pos = 0.0f;
+            if (pos > 1.0f) pos = 1.0f;
+          }
+          sterownik_cover->position = pos;
+          id(pending_publish) = false;
+          id(sterownik_cover).publish_state();
+          id(motor_direction_select).publish_state(choice.c_str());
+
+script:
+  - id: relax_stepper
+    mode: restart
+    then:
+      - delay: 5s
+      - lambda: |-
+          if (id(relax_after_move)) {
+            id(my_stepper).set_sleep_when_done(true);
+          }
+
+button:
+  - platform: template
+    name: "Kalibracja - ustaw jako otwarta"
+    id: btn_calib_open
+    on_press:
+      - lambda: |-
+          if (!id(calibration_mode).state) {
+            ESP_LOGW("calibration", "Tryb kalibracji jest wylaczony");
+            return;
+          }
+          id(my_stepper).report_position(0);
+          id(my_stepper).set_target(0);
+          id(last_pos) = 0;
+          sterownik_cover->position = 1.0f;
+          id(pending_publish) = false;
+          id(sterownik_cover).publish_state();
+          id(last_position_steps) = 0;
+  - platform: template
+    name: "Kalibracja - ustaw jako zamknieta"
+    id: btn_calib_closed
+    on_press:
+      - lambda: |-
+          if (!id(calibration_mode).state) {
+            ESP_LOGW("calibration", "Tryb kalibracji jest wylaczony");
+            return;
+          }
+          const int dir = id(motor_direction) == -1 ? -1 : 1;
+          int raw_cur = (int)id(my_stepper).current_position;
+          int cur = dir == -1 ? -raw_cur : raw_cur;
+          if (cur <= 0) cur = 1;
+          id(total_steps) = cur;
+          int internal = dir == -1 ? -cur : cur;
+          id(my_stepper).set_target(internal);
+          id(last_pos) = cur;
+          sterownik_cover->position = 0.0f;
+          id(pending_publish) = false;
+          id(sterownik_cover).publish_state();
+          id(last_position_steps) = cur;
+  - platform: template
+    name: "Kalibracja - reset kalibracji"
+    id: btn_calib_reset
+    on_press:
+      - lambda: |-
+          if (!id(calibration_mode).state) {
+            ESP_LOGW("calibration", "Tryb kalibracji jest wylaczony");
+            return;
+          }
+          const int defaults = ${step_total};
+          id(total_steps) = defaults;
+          id(my_stepper).report_position(0);
+          id(my_stepper).set_target(0);
+          id(last_pos) = 0;
+          sterownik_cover->position = 1.0f;
+          id(pending_publish) = false;
+          id(sterownik_cover).publish_state();
+          id(last_position_steps) = 0;
