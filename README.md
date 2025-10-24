@@ -36,6 +36,9 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 - Skonfiguruj integrację ESPHome w Home Assistant i dodaj urządzenie zgodnie z nazwą `esphome_name` z pliku `roller_blind_controller.yaml` (zmień ją, jeśli potrzebujesz innego identyfikatora).
 - Przetestuj otwieranie, zamykanie oraz zatrzymywanie rolety, aby potwierdzić poprawność kalibracji.
 - W razie potrzeby ustaw prędkość silnika która będzie właściwa dla twojego projektu
+
+## Licencja
+- Projekt jest dostępny na licencji MIT, pełna treść znajduje się w pliku `LICENSE`.
 ---
 
 # Roller Blind Controller (English Version)
@@ -76,5 +79,8 @@ The `Roller Blind Controller` repository contains an ESPHome configuration for a
 - Register the device in Home Assistant using the `esphome_name` defined in `roller_blind_controller.yaml` (change it if you prefer a different identifier).
 - Test opening, closing, and stopping the blind to confirm the calibration works as expected.
 - Adjust the motor speed as needed to match your project's requirements.
+
+## License
+- This project is released under the MIT License; see the `LICENSE` file for details.
 
 _This English translation was generated automatically._
