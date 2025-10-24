@@ -9,10 +9,16 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 
 ## Kluczowe funkcje
 - Sterowanie roletą jako encja `cover` w Home Assistant z pełną informacją o pozycji.
-- Silnik krokowy 28BYJ-48 sterowany poprzez ULN2003 z regulacją prędkości, przyspieszenia i hamowania.
-- Zapamiętywanie pozycji w pamięci flash oraz opcjonalne usypianie napędu po zakończeniu ruchu.
+- Silnik krokowy 28BYJ-48 sterowany poprzez ULN2003 z regulowaną prędkością, przyspieszeniem i hamowaniem.
+- Zapamiętywanie pozycji w pamięci flash oraz automatyczne (konfigurowalne) usypianie napędu po zakończeniu ruchu.
+- Natychmiastowe raportowanie do HA stanu `opening` / `closing` / `idle`, umożliwiające automatyzacje reagujące na start ruchu rolety.
 - Wbudowany serwer WWW z autoryzacją, protokół API i aktualizacje OTA.
 - Tryb kalibracji z przyciskami ustawiającymi pozycję otwarcia i zamknięcia oraz z wyborem kierunku obrotu.
+
+## Parametry konfiguracji
+- `cover_name`, `esphome_name`, `id_cover` – identyfikatory wykorzystywane w Home Assistant i ESPHome.
+- `step_total`, `max_speed`, `accel`, `decel` – podstawowe parametry ruchu silnika.
+- `relax_delay` – czas (np. `5s`) po którym sterownik silnika przechodzi w tryb uśpienia po zakończeniu ruchu.
 
 ## Wymagania sprzętowe
 - Moduł ESP8266 (np. Wemos D1 mini).
@@ -34,7 +40,8 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 - Uzupełnij plik `secrets.yaml` lokalnymi danymi (SSID, hasła, klucze OTA) w ESPHome.
 - Skonfiguruj integrację ESPHome w Home Assistant i dodaj urządzenie zgodnie z nazwą `esphome_name` z pliku `roller_blind_controller.yaml` (zmień ją, jeśli potrzebujesz innego identyfikatora).
 - Przetestuj otwieranie, zamykanie oraz zatrzymywanie rolety, aby potwierdzić poprawność kalibracji.
-- W razie potrzeby ustaw prędkość silnika która będzie właściwa dla twojego projektu
+- Dostosuj `relax_delay`, jeśli potrzebujesz innego czasu podtrzymania zasilania po ruchu.
+- W razie potrzeby ustaw prędkość silnika która będzie właściwa dla twojego projektu.
 
 ## Licencja
 - Projekt jest dostępny na licencji MIT, pełna treść znajduje się w pliku `LICENSE`.
@@ -52,9 +59,15 @@ The `Roller Blind Controller` repository contains an ESPHome configuration for a
 ## Key Features
 - Home Assistant `cover` entity with full position reporting.
 - 28BYJ-48 stepper motor driven via ULN2003 with configurable speed, acceleration, and deceleration profiles.
-- Position stored in flash memory with optional motor sleep after each movement cycle.
+- Position stored in flash memory with automatic (configurable) motor sleep once motion completes.
+- Immediate `opening` / `closing` / `idle` state updates, so Home Assistant automations can react as soon as motion begins.
 - Built-in password-protected web server, API access, and OTA updates.
 - Calibration mode with buttons for defining open/closed endpoints and a direction selector.
+
+## Configuration Parameters
+- `cover_name`, `esphome_name`, `id_cover` – identifiers used across ESPHome and Home Assistant.
+- `step_total`, `max_speed`, `accel`, `decel` – core motion parameters for the stepper motor.
+- `relax_delay` – delay (e.g., `5s`) before the driver is put to sleep after the blind stops moving.
 
 ## Hardware Requirements
 - ESP8266 module (e.g., Wemos D1 mini).
@@ -76,6 +89,7 @@ The `Roller Blind Controller` repository contains an ESPHome configuration for a
 - Populate the `secrets.yaml` file with your local credentials (SSID, passwords, OTA keys).
 - Register the device in Home Assistant using the `esphome_name` defined in `roller_blind_controller.yaml` (change it if you prefer a different identifier).
 - Test opening, closing, and stopping the blind to confirm the calibration works as expected.
+- Tune `relax_delay` if you need the driver to stay energized longer (or release sooner) after movement.
 - Adjust the motor speed as needed to match your project's requirements.
 
 ## License
