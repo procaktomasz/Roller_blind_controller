@@ -6,7 +6,6 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 ## Struktura repozytorium
 - `roller_blind_controller.yaml`: główna definicja urządzenia wraz z logiką sterowania, kalibracją i konfiguracją połączenia.
 - `secrets.yaml`: dane logowania do sieci Wi-Fi, OTA oraz serwera WWW (plik nie jest wersjonowany, należy utworzyć go lokalnie).
-- `roller_blind_controller.bak`: kopia konfiguracji przydatna jako punkt odniesienia.
 
 ## Kluczowe funkcje
 - Sterowanie roletą jako encja `cover` w Home Assistant z pełną informacją o pozycji.
@@ -49,7 +48,6 @@ The `Roller Blind Controller` repository contains an ESPHome configuration for a
 ## Repository Structure
 - `roller_blind_controller.yaml`: main device definition, automation logic, calibration helpers, and connectivity settings.
 - `secrets.yaml`: credentials for Wi-Fi, OTA, and the web server (not versioned; create locally).
-- `roller_blind_controller.bak`: backup configuration kept for reference.
 
 ## Key Features
 - Home Assistant `cover` entity with full position reporting.
