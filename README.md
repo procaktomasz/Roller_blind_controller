@@ -43,6 +43,9 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 - Dostosuj `relax_delay`, jeśli potrzebujesz innego czasu podtrzymania zasilania po ruchu.
 - W razie potrzeby ustaw prędkość silnika która będzie właściwa dla twojego projektu.
 
+## Obudowa
+- Obudowa wykorzystana w projekcie bazuje na modelu udostępnionym na Thingiverse: [ESP8266 / ULN2003 Stepper Case](https://www.thingiverse.com/thing:4246155).
+
 ## Licencja
 - Projekt jest dostępny na licencji MIT, pełna treść znajduje się w pliku `LICENSE`.
 ---
@@ -91,6 +94,9 @@ The `Roller Blind Controller` repository contains an ESPHome configuration for a
 - Test opening, closing, and stopping the blind to confirm the calibration works as expected.
 - Tune `relax_delay` if you need the driver to stay energized longer (or release sooner) after movement.
 - Adjust the motor speed as needed to match your project's requirements.
+
+## Enclosure
+- The physical case used in this project is based on the model published on Thingiverse: [ESP8266 / ULN2003 Stepper Case](https://www.thingiverse.com/thing:4246155).
 
 ## License
 - This project is released under the MIT License; see the `LICENSE` file for details.
