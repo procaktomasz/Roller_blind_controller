@@ -5,6 +5,7 @@ Projekt `Roller Blind Controller` zawiera konfigurację ESPHome dla sterownika r
 
 ## Struktura repozytorium
 - `roller_blind_controller.yaml`: główna definicja urządzenia wraz z logiką sterowania, kalibracją i konfiguracją połączenia.
+- `secrets.yaml.example`: przykładowy szablon danych logowania (skopiuj jako `secrets.yaml` i uzupełnij lokalnie).
 - `secrets.yaml`: dane logowania do sieci Wi-Fi, OTA oraz serwera WWW (plik nie jest wersjonowany, należy utworzyć go lokalnie).
 
 ## Kluczowe funkcje
@@ -57,6 +58,7 @@ The `Roller Blind Controller` repository contains an ESPHome configuration for a
 
 ## Repository Structure
 - `roller_blind_controller.yaml`: main device definition, automation logic, calibration helpers, and connectivity settings.
+- `secrets.yaml.example`: template with sample credentials (copy to `secrets.yaml` and adjust locally).
 - `secrets.yaml`: credentials for Wi-Fi, OTA, and the web server (not versioned; create locally).
 
 ## Key Features
